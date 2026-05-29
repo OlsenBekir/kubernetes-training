@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bekir-kubernetes-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: bekir-kubernetes-app
+  template:
+    metadata:
+      labels:
+        app: bekir-kubernetes-app
+    spec:
+      containers:
+        - name: bekir-kubernetes-app
+          image: bekir-kubernetes-app:2.0
+          ports:
+            - containerPort: 8000
+
+          env:
+            - name: APP_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: bekir-config
+                  key: APP_NAME
+
+            - name: APP_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: bekir-config
+                  key: APP_ENV
+
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: bekir-secret
+                  key: API_KEY
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 2
+            periodSeconds: 3
